@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<!-- Page Header-->
+<header class="masthead" style="background-image: url(/static/assets/img/post-bg.jpg); image-rendering: optimizeSpeed;">
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="site-heading">
+                    <h1 style="color: red">Admin Panel</h1>
+                    <span class="subheading"
+                        style="color:rgb(12, 187, 41); font-family: 'Lucida Sans';text-rendering: optimizeSpeed; font-size:50px; font-weight: lighter; ">Manage
+                        your post and change them</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main Content-->
+<div class="container px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-7">
+
+            <h1>Basic Action </h1>
+            <a href="/edit/0"></a> <button class="btn btn-outline-primary"> Add a new post</button></a>
+            <a href="/logout"></a> <button class="btn btn-outline-primary"> Logout </button></a>
+
+            <hr>
+
+            
+            <h1>Upload a files </h1>
+            <form action="/uploader" method="post" enctype="multipart/form-data">
+                <input type="file" name="file1">
+                <button type="submit">submit</button>
+            </form>
+            <hr>
+
+
+
+
+            <h1>Edit Post</h1>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Sno</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Edit</th>
+                        <th scope="col">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    {% for post in posts %}
+                    <tr>
+                        <td>{{post.sno}}</td>
+                        <td>{{post.title}}</td>
+                        <td>{{post.date}}</td>
+                        <td><a href="/edit/{{post.sno}}"> <button class="btn btn-outline-primary">Edit</button></a></td>
+                        <td><button class="btn btn-outline-primary">Delete</button></td>
+                    </tr>
+                    {% endfor %}
+
+
+                </tbody>
+            </table>
+        </div>
+
+
+    </div>
+</div>
+{% endblock %}

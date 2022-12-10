@@ -1,0 +1,20 @@
+{
+    "params":
+    {
+        "local_server":"True",
+        "local_uri": "mysql+pymysql://root:@localhost/Thecyberhub",
+        "prod_uri": "mysql+pymysql://root:@localhost/Thecyberhub",
+        "fb_url": "https://facebook.com/nasir.faraz.758",
+        "github_url": "https://github.com/nasir671",
+        "gmail-user": "nasirfaraj649@gmail.com",
+        "gmail-password": "pekskippevphrvee",
+        "blog_name": "Thecyberhub",
+        "tag_line": "All about Pentesting ",
+        "about_text": "Hi my name is Nasir Faraj and I am learnig Cyber security and web-delvelopment",
+        "no_of_posts": 5,
+        "admin_username": "nasir",
+        "admin_password": "Khan",
+        "upload_location": "//home//hack3r//projects"
+        
+    }
+}
