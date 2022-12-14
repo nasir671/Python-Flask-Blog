@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, session, redirect, flash
+from flask import Flask, render_template, request, session, redirect, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 import json
 from datetime import datetime
 import os
+import math
 from werkzeug.utils import secure_filename
 with open('config.json', 'r') as C:
     params = json.load(C)["params"]
@@ -13,7 +14,7 @@ local_server = True
 app = Flask(__name__)
 app.secret_key = 'Super secret key'
 app.config['UPLOAD_FOLDER'] = params['upload_location']
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+
 app.config.update(
     MAIL_SERVER='smtp.gmail.com',
     MAIL_PROT='465',
@@ -54,8 +55,31 @@ class Posts(db.Model):
 
 @app.route("/")
 def home():
-    posts = Posts.query.filter_by().all()[0:params['no_of_posts']]
-    return render_template('index.html', params=params, posts=posts)
+    posts = Posts.query.filter_by().all()
+    last = math.ceil(len(posts)/int(params['no_of_posts']))
+    # [0:params['no_of_posts']]
+    # posts  = posts[]
+    page = request.args.get('page')
+    if (not str(page).isnumeric()):
+        page = 1
+    page = int(page)
+    posts = posts[(page-1)*int(params['no_of_posts']): (page-1)
+                  * int(params['no_of_posts']) + int(params['no_of_posts'])]
+
+    # pagination Logic
+    # First
+    if (page == 1):
+        prev = "#"
+        next = "/?page=" + str(page+1)
+
+    elif (page == last):
+        prev = "/?page=" + str(page - 1)
+        next = "#"
+    else:
+        prev = "/?page=" + str(page - 1)
+        next = "/?page=" + str(page + 1)
+
+    return render_template('index.html', params=params, posts=posts, prev=prev, next=next)
 
 
 @app.route("/about")
@@ -73,8 +97,8 @@ def edit(sno):
             content = request.form.get('content')
             date = datetime.now()
 
-            if sno == '0':
-                post = Posts(title=box_title, slug=slug, content=content, tagline=tline, date=date)
+            if (sno == '0'):
+                post = Posts(title=box_title, slug=slug,content=content, tagline=tline, date=date)
                 db.session.add(post)
                 db.session.commit()
             else:
@@ -105,34 +129,39 @@ def dashboard():
             posts = Posts.query.all()
             return render_template('dashboard.html', params=params, posts=posts)
 
-    return render_template('login.html', params=params)
+    else:
+        return render_template('login.html', params=params)
 
 
 @app.route("/post/<string:post_slug>", methods=['GET'])
 def post_route(post_slug):
-    posts = Posts.query.filter_by(slug=post_slug).first()
-    return render_template('post.html', params=params, posts=posts)
-
-
+    post = Posts.query.filter_by(slug=post_slug).first()
+    return render_template('post.html', params=params, post=post)
 
 
 @app.route("/uploader", methods=['GET', 'POST'])
 def uploader():
     if ('user' in session and session['user'] == params['admin_username']):
         if request.method == 'POST':
-            if 'file1' not in request.files:
-                flash('No file part')
-                return redirect('dashboard.html')
-            file = request.files['file1']
-            if file.filename == '':
-                flash('No selected file')
-                return redirect('dashboard.html')
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return "Uploaded successfully!"
-    return redirect('login.html')
-    
+            f = request.files['file']
+            f.save(os.path.join(
+                app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
+    return "Uploaded Successfully"
+
+
+@app.route("/logout")
+def logout():
+    session.pop('user')
+    return redirect('/dashboard')
+
+
+@app.route("/delete/<string:sno>", methods=['GET', 'POST'])
+def delete_post(sno):
+    if ('user' in session and session['user'] == params['admin_username']):
+        post = Posts.query.filter_by(sno=sno).first()
+        db.session.delete(post)
+        db.session.commit()
+    return redirect('/dashboard')
 
 
 @app.route("/contact", methods=['GET', 'POST'])
